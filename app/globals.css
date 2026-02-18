@@ -1,0 +1,79 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #0a0a0f;
+  --color-surface: #111118;
+  --color-panel: #16161f;
+  --color-border: rgba(255, 255, 255, 0.07);
+  --color-border-active: rgba(255, 255, 255, 0.18);
+  --color-cream: #f4f0e8;
+  --color-gold: #c9a84c;
+  --color-gold-light: #e8c96a;
+  --color-muted: #6b6b80;
+  --color-text: #e8e6f0;
+  --color-text-dim: rgba(232, 230, 240, 0.55);
+  --color-error: #e05c5c;
+
+  --font-serif: var(--font-playfair-display), serif;
+  --font-sans: var(--font-dm-sans), sans-serif;
+
+  --radius-DEFAULT: 14px;
+}
+
+/* Custom Animations */
+@keyframes pulse-slow {
+
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.5;
+    transform: scale(0.8);
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 2s ease-in-out infinite;
+}
+
+.animate-fade-up {
+  animation: fade-up 0.45s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.fade-up-stagger>*:nth-child(1) {
+  animation-delay: 0.05s;
+}
+
+.fade-up-stagger>*:nth-child(2) {
+  animation-delay: 0.12s;
+}
+
+.fade-up-stagger>*:nth-child(3) {
+  animation-delay: 0.2s;
+}
+
+.fade-up-stagger>*:nth-child(4) {
+  animation-delay: 0.3s;
+}
+
+/* Apply Base Styles */
+body {
+  background-color: var(--color-ink);
+  color: var(--color-text);
+  font-family: var(--font-dm-sans), sans-serif;
+}
