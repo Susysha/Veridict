@@ -17,7 +17,7 @@
   --font-serif: var(--font-playfair-display), serif;
   --font-sans: var(--font-dm-sans), sans-serif;
 
-  --radius-DEFAULT: 14px;
+  --radius-DEFAULT: 8px;
 }
 
 /* Custom Animations */

@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { auth, googleProvider } from "@/lib/firebase";
 import { signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
-import { Check, Mail, Lock, User, Chrome, Eye, EyeOff } from "lucide-react";
+import { Chrome, Eye, EyeOff } from "lucide-react";
 
 export default function LoginPage() {
   const [activeTab, setActiveTab] = useState<"signin" | "signup">("signin");
@@ -15,6 +16,8 @@ export default function LoginPage() {
   const [lastName, setLastName] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const router = useRouter();
 
   // Helper to map Firebase errors to friendly messages
   const getFriendlyErrorMessage = (errorCode: string) => {
@@ -46,7 +49,8 @@ export default function LoginPage() {
       setError(null);
       await signInWithPopup(auth, googleProvider);
       console.log("Logged in with Google");
-    } catch (err: any) {
+      router.push("/dashboard");
+    } catch (err: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
       setError(getFriendlyErrorMessage(err.code));
     } finally {
       setLoading(false);
@@ -60,7 +64,8 @@ export default function LoginPage() {
       setError(null);
       await signInWithEmailAndPassword(auth, email, password);
       console.log("Logged in with Email");
-    } catch (err: any) {
+      router.push("/dashboard");
+    } catch (err: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
       setError(getFriendlyErrorMessage(err.code));
     } finally {
       setLoading(false);
@@ -74,7 +79,7 @@ export default function LoginPage() {
       setError(null);
       await createUserWithEmailAndPassword(auth, email, password);
       console.log("Signed up with Email");
-    } catch (err: any) {
+    } catch (err: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
       setError(getFriendlyErrorMessage(err.code));
     } finally {
       setLoading(false);
@@ -144,7 +149,7 @@ export default function LoginPage() {
 
         <div className="testimonial relative bg-[rgba(255,255,255,0.04)] border border-border rounded-2xl p-[22px_24px] backdrop-blur-md">
           <p className="testimonial-text text-sm text-text-dim leading-[1.65] font-light mb-3.5">
-            "InterviewIQ showed me exactly where I was losing points — filler words, pacing, body language. Got the offer within two weeks."
+            &quot;InterviewIQ showed me exactly where I was losing points — filler words, pacing, body language. Got the offer within two weeks.&quot;
           </p>
           <div className="testimonial-author flex items-center gap-2.5">
             <div className="avatar w-8 h-8 rounded-full bg-gradient-to-br from-[#7c5cbf] to-[#4a8ec2] text-[13px] text-white flex items-center justify-center font-semibold flex-shrink-0">
@@ -296,13 +301,13 @@ export default function LoginPage() {
 
           <p className="terms text-xs text-muted text-center mt-2.5 leading-[1.6]">
             {activeTab === "signin" ? (
-              <>Don't have an account? <a href="#" onClick={(e) => { e.preventDefault(); setActiveTab("signup"); }} className="text-gold no-underline hover:text-gold-light">Create one</a></>
+              <>Don&apos;t have an account? <a href="#" onClick={(e) => { e.preventDefault(); setActiveTab("signup"); }} className="text-gold no-underline hover:text-gold-light">Create one</a></>
             ) : (
               <>Already have an account? <a href="#" onClick={(e) => { e.preventDefault(); setActiveTab("signin"); }} className="text-gold no-underline hover:text-gold-light">Sign in</a></>
             )}
           </p>
         </div>
       </div>
-    </div>
+    </div >
   );
 }
