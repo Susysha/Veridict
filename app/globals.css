@@ -1,5 +1,24 @@
 @import "tailwindcss";
 
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
 @theme {
   --color-ink: #0a0a0f;
   --color-surface: #111118;
@@ -75,5 +94,20 @@
 body {
   background-color: var(--color-ink);
   color: var(--color-text);
-  font-family: var(--font-dm-sans), sans-serif;
+  font-family: var(--font-dm-sans),
+    sans-serif;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin 8s linear infinite;
 }

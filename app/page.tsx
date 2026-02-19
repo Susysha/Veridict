@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { auth, googleProvider } from "@/lib/firebase";
@@ -18,6 +18,16 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
 
   const router = useRouter();
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        // If user is already logged in, go to dashboard
+        router.push("/dashboard");
+      }
+    });
+    return () => unsubscribe();
+  }, [router]);
 
   // Helper to map Firebase errors to friendly messages
   const getFriendlyErrorMessage = (errorCode: string) => {
