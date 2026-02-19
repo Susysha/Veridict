@@ -1,121 +1,96 @@
-# Veridict (InterviewIQ) 🧠🎤
 
-**Veridict** is an advanced **AI-powered Interview Intelligence Console** designed to bridge the gap between preparation and performance. It provides candidates with a realistic, high-pressure interview environment that evaluates not just *what* they say, but *how* they say it—analyzing speech, body language, and technical accuracy in real-time.
+<div align="center">
+
+# 🧠 Veridict (InterviewIQ) 🎤
+### The AI-Powered Interview Intelligence Console
+
+![Next.js](https://img.shields.io/badge/Next.js-16-black?style=for-the-badge&logo=next.o&logoColor=white)
+![React](https://img.shields.io/badge/React-19-blue?style=for-the-badge&logo=react&logoColor=white)
+![Tailwind](https://img.shields.io/badge/Tailwind-v4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![Firebase](https://img.shields.io/badge/Firebase-Auth-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)
+![Gemma](https://img.shields.io/badge/AI-Google%20Gemma-blue?style=for-the-badge&logo=google&logoColor=white)
+![MediaPipe](https://img.shields.io/badge/Vision-MediaPipe-orange?style=for-the-badge&logo=google&logoColor=white)
+
+<br />
+
+**Bridge the gap between preparation and performance.**  
+Veridict provides a realistic, high-pressure interview simulation that evaluates **what** you say and **how** you say it.
+
+[View Demo](#) · [Report Bug](#) · [Request Feature](#)
+
+</div>
 
 ---
 
 ## 🚀 The Problem
 
-Traditional interview preparation is broken:
-- **No Feedback Loop**: Candidates practice in front of mirrors or friends who can't provide objective technical feedback.
-- **Subjectivity**: "You seem nervous" is not actionable. Candidates need data-driven insights.
-- **Static Content**: Reading "Top 100 Java Questions" doesn't prepare you for the dynamic, follow-up intensive nature of real interviews.
-- **Holistic Gaps**: Technical skills are only half the battle. Body language, eye contact, and confidence often decide the outcome.
+Traditional interview preparation is fundamentally broken:
 
-## 💡 The Solution
-
-**Veridict** acts as your personal AI Interview Coach. It creates dynamic, role-specific interview sessions where an AI interviewer speaks to you, listens to your answers, watches your camerea feed, and provides a comprehensive **Performance Report** instantly.
-
-### Key Features
-- **Real-Time Technical Interviewer**: Uses **Google Gemma** to generate context-aware questions based on your specific Resume and Role.
-- **Live Body Language Analysis**: Uses **MediaPipe** to track facial landmarks, posture, and eye contact in real-time within the browser.
-- **Speech Intelligence**:
-    - **Speech-to-Text (STT)**: Uses the **Web Speech API** for unlimited, low-latency transcription.
-    - **Text-to-Speech (TTS)**: Features high-quality voice output via **Speechmatics** (with browser fallback) for a lifelike experience.
-- **Dynamic Dashboard**: Tracks progress, sets goals (Preparation Plan), and visualizes improvement over time using Radar Charts and Trend Lines.
-- **Smart Feedback**: Detailed "Growth Areas" and "Key Strengths" analysis for every session.
+| Problem | The Veridict Solution |
+| :--- | :--- |
+| **🪞 No Feedback Loop** | Practice with a **Real-Time AI Interviewer** that listens and responds. |
+| **🤷‍♂️ Subjectivity** | Get **Data-Driven Insights** (0-100 scores) instead of "you seem nervous." |
+| **📚 Static Content** | **Dynamic Questions** generated from *your* resume and target role. |
+| **👀 Holistic Gaps** | **Computer Vision** analyzes eye contact, posture, and confidence. |
 
 ---
 
-## 🛠 Tech Stack
+## 🛠 Tech Stack & Architecture
 
-Built with a modern, performance-first stack:
+Built with a performance-first philosophy using the bleeding edge of web tech.
 
-### **Frontend**
-- **Framework**: [Next.js 16 (App Router)](https://nextjs.org/)
-- **UI Library**: [React 19](https://react.dev/)
-- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
-- **Icons**: [Lucide React](https://lucide.dev/)
+### **Frontend & UI**
+- **Framework**: `Next.js 16` (App Router)
+- **Library**: `React 19` (Server Actions)
+- **Styling**: `Tailwind CSS v4` + **Lucide React** Icons
 
-### **AI & Machine Learning**
-- **LLM**: [Google Gemma](https://ai.google.dev/gemma) (via Google AI Studio)
-- **Computer Vision**: [MediaPipe Tasks Vision](https://developers.google.com/mediapipe/solutions/vision/face_landmarker) (Client-side WASM)
-- **Speech-to-Text**: Browser Native **Web Speech API** (Zero-latency, Privacy-focused)
-- **Text-to-Speech**: **Speechmatics API** (Server-side) with **SpeechSynthesis** fallback.
+### **Artificial Intelligence**
+- **🧠 LLM**: **Google Gemma 2** (via Google AI Studio) for context-aware reasoning.
+- **👁️ Vision**: **MediaPipe Face Landmarker** (Client-side WASM) for real-time body language tracking.
+- **🗣️ Speech**: 
+    - **STT**: Browser Native `Web Speech API` (Zero-latency).
+    - **TTS**: **Speechmatics Neural API** (Natural prosody) + Fallback.
 
-### **Backend & Infrastructure**
-- **Auth**: [Firebase Authentication](https://firebase.google.com/) (Google & Email/Password)
-- **API**: Next.js Server Actions & API Routes
-- **Storage**: `sessionStorage` for transient interview states.
+### **Infrastucture**
+- **Auth**: `Firebase Authentication` (OAuth + Email/Pass).
+- **Backend**: Serverless API Routes (Next.js).
 
 ---
-
-## 📂 Project Structure
-
-```bash
-/app
-  /api          # Serverless functions (TTS, Analysis, Questions)
-  /dashboard    # User Analytics & Preparation Plan
-  /interview    # Core simulation engine (MediaPipe & STT logic)
-  page.tsx      # Landing Page + Authentication
-/lib
-  firebase.ts   # Auth configuration
-```
 
 ## 🔄 System Workflow
 
-The Veridict architecture follows a sophisticated multi-stage pipeline to ensure realistic simulation and accurate feedback.
+The Veridict architecture follows a sophisticated multi-stage pipeline.
 
 ### 1. **Onboarding & Context Injection**
-   - **Authentication**: Secure login via **Firebase Auth** guarantees user data privacy and session persistence.
-   - **Resume Parsing**: The user uploads a resume (PDF/DOCX).
-   - **AI Context Extraction**: **Google Gemma** analyzes the resume to extract:
-     - *Skills & Tech Stack*
-     - *Experience Level* (Junior/Mid/Senior)
-     - *Project History*
-   - This metadata creates a unique **"Candidate Profile"** that drives the entire session.
+   - **Resume Parsing**: Upload PDF/DOCX.
+   - **Context Extraction**: **Gemma** extracts *Skills*, *Experience Level*, and *Project History* from your resume to build a **Candidate Profile**.
 
 ### 2. **Dynamic Question Generation (RAG-Lite)**
-   - Instead of static question banks, Veridict uses the Candidate Profile + Chosen Role (e.g., "Senior React Dev") to generate **custom interview questions** on the fly.
-   - **Logic**: Questions are categorized into *Technical*, *Behavioral*, and *System Design*.
-   - **Adaptability**: If a user selects "Google" as the target company, the AI adjusts the difficulty and question style (e.g., more LeetCode-style for FAANG).
+   - **Adaptive Logic**: Questions are generated on-the-fly based on your profile and chosen role (e.g., "Senior React Dev").
+   - **Difficulty Tuning**: Targets specific companies (e.g., "Google" mode asks harder system design questions).
 
-### 3. **The Active Interview Loop (Real-Time Core)**
-   This is the heart of the application, running multiple parallel streams:
+### 3. **The Active Interview Loop**
+   - **🔊 Audio Output**: AI Interviewer speaks with human-like intonation.
+   - **🎤 Audio Input**: Detailed full-duplex speech recognition.
+   - **👁️ Visual Intelligence**: 
+     - **Posture Analysis**: Detects slouching.
+     - **Eye Contact**: Tracks iris movement for "Attention Score".
+     - **Real-Time Nudges**: Subtle UI alerts if you look away too often.
 
-   - **A. Audio Output (TTS Engine)**
-     - The AI interviewer speaks the question using **Speechmatics Neural TTS** for human-like intonation.
-     - **Fallback System**: If the server TTS fails or hits limits, the system instantly switches to the browser’s native `SpeechSynthesis` API to ensure zero interruption.
-   
-   - **B. Audio Input (STT Engine)**
-     - The user’s voice is captured via **Web Speech API** (for unlimited transcription).
-     - **Silence Detection**: The system intelligently detects when the user finishes answering to auto-advance (or allows manual control).
-
-   - **C. Visual Intelligence (Computer Vision)**
-     - **MediaPipe Face Landmarker** runs locally in the browser (WASM) at 30fps.
-     - **Posture Analysis**: Tracks shoulder and nose coordinates to detect slouching or leaning.
-     - **Eye Contact Tracking**: Uses iris tracking and head pose geometry to calculate an "Attention Score."
-     - **Real-Time Nudges**: If the user looks away too often or slouches, a subtle UI notification nudges them to correct it *during* the answer.
-
-### 4. **Post-Processing & Analysis**
-   - Once the session ends, the raw data (Audio Transcripts + Vision Metadata) is bundled.
-   - **Multi-Modal Analysis**: Gemma accepts the entire transcript + aggregated vision scores.
-   - **Scoring Engine**:
-     - *Technical Accuracy*: 0-100 score based on answer correctness.
-     - *Communication*: Evaluates clarity, filler word usage (via transcript analysis), and pacing.
-     - *Non-Verbal*: Aggregated score from the MediaPipe session.
-
-### 5. **Feedback & Action Plan**
-   - The user receives a **Performance Report** with:
-     - **Spider Graph**: Visualizing competence across 5 axes (Technical, Comm, Body Lang, Confidence, Vocab).
-     - **Actionable Feedback**: "You used 'um' 12 times. Try pausing instead."
-     - **Preparation Plan**: AI-generated tasks (e.g., "Review React Hooks", "Practice STAR method") added to their Dashboard.
-
----
+### 4. **Post-Processing & Scoring**
+   - **Technical Accuracy** (0-100)
+   - **Communication Score** (Fluency, filler words, pacing)
+   - **Non-Verbal Score** (Body language aggregation)
 
 ---
 
 ## ⚡ Getting Started
+
+### Prerequisites
+- Node.js 18+
+- NPM or PNPM
+
+### Installation
 
 1. **Clone the repo**
    ```bash
@@ -132,9 +107,8 @@ The Veridict architecture follows a sophisticated multi-stage pipeline to ensure
    Create a `.env.local` file:
    ```env
    NEXT_PUBLIC_GEMINI_API_KEY=your_gemini_key
-    SPEECHMATICS_API_KEY=your_speechmatics_key
+   SPEECHMATICS_API_KEY=your_speechmatics_key
    NEXT_PUBLIC_FIREBASE_API_KEY=...
-   # ... other firebase config
    ```
 
 4. **Run Development Server**
@@ -142,36 +116,33 @@ The Veridict architecture follows a sophisticated multi-stage pipeline to ensure
    npm run dev
    ```
 
-5. **Open Browser**
-   Navigate to `http://localhost:3000`
+5. **Launch**
+   Open `http://localhost:3000` to start your prep.
 
 ---
 
-## 🚀 Future Scope & Roadmap
+## � Roadmap & Future Scope
 
-Veridict is evolving from a simulation tool to a comprehensive career acceleration platform.
-
-### **Phase 1: Content Expansion (PYQs)**
-- [ ] **Previous Year Questions (PYQs)**: Integration with a database of real interview questions from top companies (Google, Amazon, Microsoft, Uber).
-    - *Feature*: "Simulate a 2023 Google L4 Interview."
-- [ ] **Company-Specific Personas**: AI interviewers with distinct personalities (e.g., "The Strict FinTech Interviewer" vs. "The Friendly Startup Founder").
-
-### **Phase 2: Community & Peer Learning**
-- [ ] **P2P Mock Interviews**: Connect users preparing for similar roles to interview each other.
-- [ ] **Leaderboards**: Gamified streaks and scores to encourage daily practice.
-- [ ] **Community Anonymized Reviews**: Share your AI feedback score to see where you rank globally.
-
-### **Phase 3: Advanced AI Features**
-- [ ] **Voice Cloning**: Upload a sample of your favorite tech influencer or mentor, and have *them* interview you.
-- [ ] **Code-Pairing Environment**: A collaborative code editor ensuring the AI can "read" your code in real-time during coding rounds.
-- [ ] **Biometric Stress Analysis**: (Experimental) using remote photoplethysmography (rPPG) to detect heart rate variability via webcam to measure stress levels.
-
-### **Phase 4: Mobile Ecosystem**
-- [ ] **React Native App**: For practicing behavioral questions (STAR method) on the go.
-- [ ] **Offline Mode**: Practice pitch intros without an internet connection.
+| Phase | Feature | Description |
+| :--- | :--- | :--- |
+| **Phase 1** | **PYQ Integration** | Database of real questions from FAANG companies. |
+| **Phase 1** | **Personas** | "Strict Interviewer" vs "Friendly Founder" modes. |
+| **Phase 2** | **P2P Mock Interviews** | Connect with peers for live mock sessions. |
+| **Phase 3** | **Voice Cloning** | Be interviewed by a clone of your favorite tech influencer. |
+| **Phase 4** | **Mobile App** | React Native app for on-the-go STAR method practice. |
 
 ---
 
 ## 🌟 Why It Works
 
-By combining **Computer Vision** (for non-verbal cues) with **Generative AI** (for technical depth), Veridict offers the only 360-degree interview view available to candidates today. It doesn't just check your code; it trains your presence.
+> "It doesn't just check your code; it trains your presence."
+
+By combining **Computer Vision** (for non-verbal cues) with **Generative AI** (for technical depth), Veridict offers the only 360-degree interview view available to candidates today.
+
+---
+
+<div align="center">
+
+**Made with ❤️ using Next.js & Google Gemma**
+
+</div>
