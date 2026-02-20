@@ -249,29 +249,31 @@ export default function StatisticsPage() {
 
                     {/* Pricing Tier Row */}
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        {/* B2B Enterprise */}
+                        {/* B2B Startup Filtering */}
                         <div className="bg-panel border border-border hover:border-blue-500/30 rounded-2xl p-8 relative overflow-hidden group transition-all duration-500">
                             <div className="absolute -right-10 -top-10 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-colors"></div>
                             <div className="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center mb-6 relative z-10">
                                 <Building className="text-blue-400" size={24} />
                             </div>
-                            <h3 className="text-xl font-serif text-cream mb-2 relative z-10">B2B Enterprise</h3>
-                            <div className="text-3xl font-bold text-blue-400 mb-4 relative z-10">$5K<span className="text-sm font-normal text-muted">/mo</span></div>
+                            <h3 className="text-xl font-serif text-cream mb-2 relative z-10">Startup SaaS</h3>
+                            <div className="text-3xl font-bold text-blue-400 mb-4 relative z-10">₹999<span className="text-sm font-normal text-muted">/mo</span></div>
                             <p className="text-sm text-muted font-light leading-relaxed relative z-10">
-                                Uncapped concurrent screening sessions. White-labeled dashboard integration for large HR teams. **This tier entirely subsidizes server costs.**
+                                <span className="text-cream block font-medium mb-1">The "No-Brainer" Filter:</span>
+                                Startups drown in AngelList/LinkedIn spam. For less than the cost of a team lunch, founders automate the first-round technical screen, ensuring they only talk to the top 10%.
                             </p>
                         </div>
 
-                        {/* Pay-Per-Session API */}
+                        {/* Portal API Integration */}
                         <div className="bg-panel border border-border hover:border-gold/30 rounded-2xl p-8 relative overflow-hidden group transition-all duration-500">
                             <div className="absolute -right-10 -top-10 w-32 h-32 bg-gold/10 rounded-full blur-2xl group-hover:bg-gold/20 transition-colors"></div>
                             <div className="w-12 h-12 rounded-xl bg-gold/10 border border-gold/20 flex items-center justify-center mb-6 relative z-10">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gold"><path d="M12 2v20" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg>
                             </div>
-                            <h3 className="text-xl font-serif text-cream mb-2 relative z-10">API Integration</h3>
-                            <div className="text-3xl font-bold text-gold mb-4 relative z-10">$2<span className="text-sm font-normal text-muted">/session</span></div>
+                            <h3 className="text-xl font-serif text-cream mb-2 relative z-10">Portal API Integrations</h3>
+                            <div className="text-3xl font-bold text-gold mb-4 relative z-10">₹49<span className="text-sm font-normal text-muted">/interview</span></div>
                             <p className="text-sm text-muted font-light leading-relaxed relative z-10">
-                                Targeted at ATS platforms linking our SDK into their flow. Since our server video cost is $0.00, this yields a literal 99% profit margin per call.
+                                <span className="text-cream block font-medium mb-1">Our Core Revenue Engine:</span>
+                                Why build an audience when you can sell shovels? Naukri and Instahyre plug our SDK into their flow. With WebGL $0 compute, this is 99% pure profit at scale.
                             </p>
                         </div>
 
@@ -282,9 +284,10 @@ export default function StatisticsPage() {
                                 <Users className="text-purple-400" size={24} />
                             </div>
                             <h3 className="text-xl font-serif text-cream mb-2 relative z-10">B2C Subsidized</h3>
-                            <div className="text-3xl font-bold text-purple-400 mb-4 relative z-10">$0<span className="text-sm font-normal text-muted">/mo base</span></div>
+                            <div className="text-3xl font-bold text-purple-400 mb-4 relative z-10">₹0<span className="text-sm font-normal text-muted">/mo base</span></div>
                             <p className="text-sm text-muted font-light leading-relaxed relative z-10">
-                                We don't hamper job-seekers. The core practice engine is heavily subsidized by B2B revenue, ensuring mass adoption and ethical access to AI tooling.
+                                <span className="text-cream block font-medium mb-1">Our ethical moat:</span>
+                                We do not hamper job-seekers. The core practice engine is heavily subsidized by B2B enterprise revenue, ensuring mass adoption and network effects.
                             </p>
                         </div>
                     </div>
