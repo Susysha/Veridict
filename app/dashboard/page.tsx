@@ -6,12 +6,12 @@ import {
     Upload, FileText, Briefcase, Building, Clock,
     TrendingUp, ArrowRight, Plus, Check,
     Code, Users, Monitor, Brain,
-    Zap, Award, BarChart3, Mic, BookOpen
+    Zap, Award, BarChart3, Mic, BookOpen, LogOut
 } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { auth } from "@/lib/firebase";
-import { User } from "firebase/auth";
+import { User, signOut } from "firebase/auth";
 
 import { Suspense } from "react";
 
@@ -68,6 +68,15 @@ function DashboardContent() {
         console.log(`Starting interview with params: ${params.toString()}`);
         router.push(`/interview?${params.toString()}`);
     };
+    const handleLogout = async () => {
+        try {
+            await signOut(auth);
+            router.push("/");
+        } catch (err) {
+            console.error("Logout failed:", err);
+        }
+    };
+
     // URL Params for Analysis
     const searchParams = useSearchParams();
     const router = useRouter();
@@ -257,6 +266,13 @@ function DashboardContent() {
                                     {user?.displayName ? user.displayName[0] : "U"}
                                 </div>
                             )}
+                            <button
+                                onClick={handleLogout}
+                                title="Sign Out"
+                                className="w-9 h-9 rounded-lg border border-border bg-surface flex items-center justify-center text-muted hover:text-red-400 hover:border-red-400/40 hover:bg-red-400/5 transition-all duration-200"
+                            >
+                                <LogOut size={15} />
+                            </button>
                         </div>
                     </div>
                 </div>

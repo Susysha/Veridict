@@ -10,6 +10,7 @@
 ![Firebase](https://img.shields.io/badge/Firebase-Auth-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)
 ![Gemma](https://img.shields.io/badge/AI-Google%20Gemma-blue?style=for-the-badge&logo=google&logoColor=white)
 ![MediaPipe](https://img.shields.io/badge/Vision-MediaPipe-orange?style=for-the-badge&logo=google&logoColor=white)
+![Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel&logoColor=white)
 
 <br />
 

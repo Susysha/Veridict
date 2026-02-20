@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# project docs / references (not for repo)
+TUTORIAL.md
+PROJECT_BIBLE.txt
+_reference/
+lint_utf8.txt
