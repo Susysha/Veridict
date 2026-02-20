@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, ShieldCheck, Cpu, Database, Network, Eye, Lock, Activity, Server, Zap, Building, TrendingUp, Users } from "lucide-react";
+import { ArrowLeft, ShieldCheck, Cpu, Database, Network, Eye, Lock, Activity, Server, Zap } from "lucide-react";
 
 export default function StatisticsPage() {
     const [hoveredCard, setHoveredCard] = useState<number | null>(null);
@@ -213,84 +213,6 @@ export default function StatisticsPage() {
                         </div>
                     </div>
 
-                </div>
-
-                {/* 6. Market Fit & Revenue Generation */}
-                <div className="mt-12 animate-fade-up delay-[450ms]">
-                    <div className="flex items-center gap-4 mb-8">
-                        <h2 className="text-2xl font-serif text-cream whitespace-nowrap">Market & Monetization</h2>
-                        <div className="h-px bg-border flex-1"></div>
-                    </div>
-
-                    {/* Market Data Row */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                        <div className="bg-surface border border-border rounded-xl p-5 flex items-center justify-between">
-                            <div>
-                                <div className="text-xs text-muted uppercase tracking-wider mb-1">Global HR Tech Market</div>
-                                <div className="text-2xl font-bold text-cream">$500B+</div>
-                            </div>
-                            <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center"><Network size={16} className="text-blue-400" /></div>
-                        </div>
-                        <div className="bg-surface border border-border rounded-xl p-5 flex items-center justify-between">
-                            <div>
-                                <div className="text-xs text-muted uppercase tracking-wider mb-1">Our TAM (Tech Screening)</div>
-                                <div className="text-2xl font-bold text-emerald-400">$25.4B</div>
-                            </div>
-                            <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center"><Activity size={16} className="text-emerald-400" /></div>
-                        </div>
-                        <div className="bg-surface border border-border rounded-xl p-5 flex items-center justify-between">
-                            <div>
-                                <div className="text-xs text-muted uppercase tracking-wider mb-1">Year-Over-Year Growth</div>
-                                <div className="text-2xl font-bold text-gold">14.2%</div>
-                            </div>
-                            <div className="w-10 h-10 rounded-full bg-gold/10 flex items-center justify-center"><TrendingUp size={16} className="text-gold" /></div>
-                        </div>
-                    </div>
-
-                    {/* Pricing Tier Row */}
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        {/* B2B Startup Filtering */}
-                        <div className="bg-panel border border-border hover:border-blue-500/30 rounded-2xl p-8 relative overflow-hidden group transition-all duration-500">
-                            <div className="absolute -right-10 -top-10 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-colors"></div>
-                            <div className="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center mb-6 relative z-10">
-                                <Building className="text-blue-400" size={24} />
-                            </div>
-                            <h3 className="text-xl font-serif text-cream mb-2 relative z-10">Startup SaaS</h3>
-                            <div className="text-3xl font-bold text-blue-400 mb-4 relative z-10">₹999<span className="text-sm font-normal text-muted">/mo</span></div>
-                            <p className="text-sm text-muted font-light leading-relaxed relative z-10">
-                                <span className="text-cream block font-medium mb-1">The "No-Brainer" Filter:</span>
-                                Startups drown in AngelList/LinkedIn spam. For less than the cost of a team lunch, founders automate the first-round technical screen, ensuring they only talk to the top 10%.
-                            </p>
-                        </div>
-
-                        {/* Portal API Integration */}
-                        <div className="bg-panel border border-border hover:border-gold/30 rounded-2xl p-8 relative overflow-hidden group transition-all duration-500">
-                            <div className="absolute -right-10 -top-10 w-32 h-32 bg-gold/10 rounded-full blur-2xl group-hover:bg-gold/20 transition-colors"></div>
-                            <div className="w-12 h-12 rounded-xl bg-gold/10 border border-gold/20 flex items-center justify-center mb-6 relative z-10">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gold"><path d="M12 2v20" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg>
-                            </div>
-                            <h3 className="text-xl font-serif text-cream mb-2 relative z-10">Portal API Integrations</h3>
-                            <div className="text-3xl font-bold text-gold mb-4 relative z-10">₹49<span className="text-sm font-normal text-muted">/interview</span></div>
-                            <p className="text-sm text-muted font-light leading-relaxed relative z-10">
-                                <span className="text-cream block font-medium mb-1">Our Core Revenue Engine:</span>
-                                Why build an audience when you can sell shovels? Naukri and Instahyre plug our SDK into their flow. With WebGL $0 compute, this is 99% pure profit at scale.
-                            </p>
-                        </div>
-
-                        {/* B2C Freemium Edge */}
-                        <div className="bg-panel border border-border hover:border-purple-500/30 rounded-2xl p-8 relative overflow-hidden group transition-all duration-500">
-                            <div className="absolute -right-10 -top-10 w-32 h-32 bg-purple-500/10 rounded-full blur-2xl group-hover:bg-purple-500/20 transition-colors"></div>
-                            <div className="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mb-6 relative z-10">
-                                <Users className="text-purple-400" size={24} />
-                            </div>
-                            <h3 className="text-xl font-serif text-cream mb-2 relative z-10">B2C Subsidized</h3>
-                            <div className="text-3xl font-bold text-purple-400 mb-4 relative z-10">₹0<span className="text-sm font-normal text-muted">/mo base</span></div>
-                            <p className="text-sm text-muted font-light leading-relaxed relative z-10">
-                                <span className="text-cream block font-medium mb-1">Our ethical moat:</span>
-                                We do not hamper job-seekers. The core practice engine is heavily subsidized by B2B enterprise revenue, ensuring mass adoption and network effects.
-                            </p>
-                        </div>
-                    </div>
                 </div>
 
                 {/* 6. Hackathon Judging Rubric Alignment */}
