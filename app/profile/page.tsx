@@ -45,6 +45,7 @@ export default function ProfilePage() {
     };
 
     const handleLogout = async () => {
+        sessionStorage.removeItem("onboarding_shown");
         await signOut(auth);
         router.push("/");
     };

@@ -78,6 +78,7 @@ function DashboardContent() {
     };
     const handleLogout = async () => {
         try {
+            sessionStorage.removeItem("onboarding_shown");
             await signOut(auth);
             router.push("/");
         } catch (err) {
@@ -112,7 +113,9 @@ function DashboardContent() {
                 // Load profile, pre-fill fields — show onboarding once per sign-in session
                 const profile = getProfile();
 
-                setShowOnboarding(true);
+                if (!sessionStorage.getItem("onboarding_shown")) {
+                    setShowOnboarding(true);
+                }
 
                 if (profile.targetRole) setRole(profile.targetRole);
                 if (profile.experienceLevel) setExperience(profile.experienceLevel);
@@ -247,6 +250,7 @@ function DashboardContent() {
                 <OnboardingWizard
                     firebaseUser={user}
                     onComplete={(profile) => {
+                        sessionStorage.setItem("onboarding_shown", "1");
                         setShowOnboarding(false);
                         if (profile.targetRole) setRole(profile.targetRole);
                         if (profile.experienceLevel) setExperience(profile.experienceLevel);
