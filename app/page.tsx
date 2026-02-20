@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { auth, googleProvider } from "@/lib/firebase";
-import { signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
+import { signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
 import { Chrome, Eye, EyeOff } from "lucide-react";
 
 export default function LoginPage() {
@@ -16,6 +16,7 @@ export default function LoginPage() {
   const [lastName, setLastName] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [resetMessage, setResetMessage] = useState<string | null>(null);
   // True until Firebase resolves auth — prevents login UI flash for already-logged-in users
   const [authChecking, setAuthChecking] = useState(true);
 
@@ -66,6 +67,7 @@ export default function LoginPage() {
     try {
       setLoading(true);
       setError(null);
+      setResetMessage(null);
       await signInWithPopup(auth, googleProvider);
       console.log("Logged in with Google");
       router.push("/dashboard");
@@ -81,6 +83,7 @@ export default function LoginPage() {
     try {
       setLoading(true);
       setError(null);
+      setResetMessage(null);
       await signInWithEmailAndPassword(auth, email, password);
       console.log("Logged in with Email");
       router.push("/dashboard");
@@ -96,8 +99,28 @@ export default function LoginPage() {
     try {
       setLoading(true);
       setError(null);
+      setResetMessage(null);
       await createUserWithEmailAndPassword(auth, email, password);
       console.log("Signed up with Email");
+    } catch (err: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
+      setError(getFriendlyErrorMessage(err.code));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!email) {
+      setError("Please enter your email address to reset password.");
+      return;
+    }
+    try {
+      setLoading(true);
+      setError(null);
+      setResetMessage(null);
+      await sendPasswordResetEmail(auth, email);
+      setResetMessage("Password reset email sent. Check your inbox.");
     } catch (err: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
       setError(getFriendlyErrorMessage(err.code));
     } finally {
@@ -231,6 +254,17 @@ export default function LoginPage() {
             </div>
           )}
 
+          {/* Success Message */}
+          {resetMessage && (
+            <div className="flex items-center gap-2 bg-green-500/10 border border-green-500/20 text-green-400 text-xs p-3 rounded-lg mb-6 animate-fade-up">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
+              <span>{resetMessage}</span>
+            </div>
+          )}
+
           <div className="divider flex items-center gap-3.5 mb-6 before:flex-1 before:h-px before:bg-border after:flex-1 after:h-px after:bg-border">
             <span className="text-xs text-muted tracking-[0.05em] whitespace-nowrap">
               {activeTab === "signin" ? "or continue with email" : "or sign up with email"}
@@ -301,7 +335,7 @@ export default function LoginPage() {
 
             {activeTab === "signin" && (
               <div className="forgot-row flex justify-end -mt-2">
-                <a href="#" className="text-[13px] text-gold no-underline font-normal transition-colors duration-200 hover:text-gold-light">Forgot password?</a>
+                <a href="#" onClick={handleForgotPassword} className="text-[13px] text-gold no-underline font-normal transition-colors duration-200 hover:text-gold-light">Forgot password?</a>
               </div>
             )}
 
