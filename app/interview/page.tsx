@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Mic, MicOff, Video, VideoOff, X, ChevronRight, Play, Loader2, AlertCircle, RefreshCw } from "lucide-react";
+import { Mic, MicOff, Video, VideoOff, X, ChevronRight, Play, Loader2, AlertCircle, RefreshCw, Code } from "lucide-react";
 import { FaceLandmarker, FilesetResolver } from "@mediapipe/tasks-vision";
 
 type Question = {
@@ -34,6 +34,7 @@ function InterviewContent() {
     const [isStreamActive, setIsStreamActive] = useState(false); // Track if stream is actually playing
     const [isRecording, setIsRecording] = useState(false);
     const [transcript, setTranscript] = useState("");
+    const [code, setCode] = useState("");
     const [feedback, setFeedback] = useState<string | null>(null);
     const [answers, setAnswers] = useState<any[]>([]); // Store Q&A
     const [isStartingRecording, setIsStartingRecording] = useState(false);
@@ -306,10 +307,23 @@ function InterviewContent() {
             };
 
             recognition.onend = () => {
-                isRecordingRef.current = false;
-                isStartingRef.current = false;
-                setIsRecording(false);
-                setIsStartingRecording(false);
+                // If the user hasn't explicitly clicked stop, auto-restart the engine.
+                if (isRecordingRef.current) {
+                    setTimeout(() => {
+                        if (isRecordingRef.current && recognitionRef.current) {
+                            try {
+                                recognitionRef.current.start();
+                            } catch (e) {
+                                isRecordingRef.current = false;
+                                setIsRecording(false);
+                            }
+                        }
+                    }, 100);
+                } else {
+                    isStartingRef.current = false;
+                    setIsRecording(false);
+                    setIsStartingRecording(false);
+                }
             };
 
             recognitionRef.current = recognition;
@@ -393,17 +407,20 @@ function InterviewContent() {
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const lastSpokenIndex = useRef<number>(-1);
 
+    const stopAllAudio = () => {
+        if (audioRef.current) {
+            audioRef.current.pause();
+            audioRef.current.currentTime = 0;
+            audioRef.current = null;
+        }
+        if (typeof window !== 'undefined') {
+            window.speechSynthesis.cancel();
+        }
+    };
+
     // Global cleanup to ensure TTS never leaks into other pages
     useEffect(() => {
-        return () => {
-            if (audioRef.current) {
-                audioRef.current.pause();
-                audioRef.current.currentTime = 0;
-            }
-            if (typeof window !== 'undefined') {
-                window.speechSynthesis.cancel();
-            }
-        };
+        return stopAllAudio;
     }, []);
 
     const speakQuestion = async (text: string, index: number) => {
@@ -412,12 +429,7 @@ function InterviewContent() {
 
         try {
             // 1. STOP previous audio immediately
-            if (audioRef.current) {
-                audioRef.current.pause();
-                audioRef.current.currentTime = 0;
-                audioRef.current = null;
-            }
-            window.speechSynthesis.cancel(); // Stop any browser TTS
+            stopAllAudio();
 
             let url = audioCache.current.get(index);
             if (!url) {
@@ -460,7 +472,7 @@ function InterviewContent() {
             }
             const nextIndex = currentIndex + 1;
             if (nextIndex < questions.length) prefetchAudio(nextIndex);
-            return () => { if (audioRef.current) audioRef.current.pause(); };
+            return stopAllAudio;
         }
     }, [currentIndex, questions, loading]);
 
@@ -470,30 +482,25 @@ function InterviewContent() {
         const currentAnswer = {
             questionId: questions[currentIndex].id,
             question: questions[currentIndex].question,
-            answer: transcript,
+            answer: transcript + (code.trim() ? `\n\n[Candidate's Code Submission]:\n${code}` : ""),
             timestamp: new Date().toISOString(),
             metrics: { postureScore, eyeContactScore }
         };
         const updatedAnswers = [...answers, currentAnswer];
         setAnswers(updatedAnswers);
 
+        stopAllAudio();
+
         if (currentIndex < questions.length - 1) {
             setCurrentIndex(prev => prev + 1);
             setTranscript("");
+            setCode("");
         } else {
             // Finish Interview
             setIsGeneratingReport(true);
             setIsAnalyzing(false); // Stop analysis loop immediately
 
-            // --- STOP ALL TTS AUDIO IMMEDIATELY ---
-            if (audioRef.current) {
-                audioRef.current.pause();
-                audioRef.current.currentTime = 0;
-                audioRef.current = null;
-            }
-            if (typeof window !== 'undefined') {
-                window.speechSynthesis.cancel();
-            }
+            stopAllAudio();
 
             // Stop camera tracks to prevent WebGL errors
             if (streamRef.current) {
@@ -685,17 +692,35 @@ function InterviewContent() {
                             </button>
                         </div>
                     </div>
-
-                    <div className="flex-1 bg-panel border border-border rounded-xl p-5 relative flex flex-col min-h-0 overflow-hidden">
-                        <div className="flex justify-between items-center mb-3 shrink-0">
-                            <span className="text-xs font-medium text-muted uppercase tracking-wider">Your Answer</span>
-                            {isRecording ? <span className="text-[10px] text-red-500 animate-pulse font-medium">Listening...</span> : <span className="text-[10px] text-muted">Microphone standby</span>}
+                    <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-4 min-h-0">
+                        {/* Transcript Box */}
+                        <div className="bg-panel border border-border rounded-xl p-5 relative flex flex-col min-h-0 overflow-hidden shadow-lg">
+                            <div className="flex justify-between items-center mb-3 shrink-0">
+                                <span className="text-xs font-semibold text-muted uppercase tracking-wider flex items-center gap-2">
+                                    Your Answer
+                                </span>
+                                {isRecording && <span className="text-[10px] text-red-500 animate-pulse font-medium">Listening...</span>}
+                            </div>
+                            <div className="flex-1 overflow-y-auto custom-scrollbar text-sm text-text/90 leading-relaxed font-light whitespace-pre-wrap pr-2">
+                                {transcript || <span className="text-muted/40 italic">Start speaking to see transcription...</span>}
+                            </div>
                         </div>
-                        <div className="flex-1 overflow-y-auto custom-scrollbar text-sm text-text/90 leading-relaxed font-light whitespace-pre-wrap pr-2">
-                            {transcript || <span className="text-muted/40 italic">Start speaking to see transcription...</span>}
+
+                        {/* Code Editor Box */}
+                        <div className="bg-[#0a0a0f] border border-border rounded-xl p-5 relative flex flex-col min-h-0 overflow-hidden shadow-lg focus-within:border-blue-500/30 transition-colors">
+                            <div className="flex justify-between items-center mb-3 shrink-0">
+                                <span className="text-xs font-semibold text-blue-400 flex items-center gap-2">
+                                    <Code size={14} /> Code
+                                </span>
+                            </div>
+                            <textarea
+                                value={code}
+                                onChange={(e) => setCode(e.target.value)}
+                                placeholder="// Write code logic, formulas, or pseudocode here. This will be evaluated by the AI."
+                                className="w-full flex-1 bg-transparent text-sm font-mono text-cream/90 outline-none resize-none placeholder:text-muted/30 leading-relaxed custom-scrollbar"
+                            />
                         </div>
                     </div>
-
                     <div className="grid grid-cols-2 gap-3 shrink-0">
                         <button onClick={toggleRecording} disabled={isStartingRecording} className={`py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition-all ${isRecording ? "bg-red-500/10 text-red-500 border border-red-500/50 hover:bg-red-500/20" : "bg-surface border border-border text-text hover:bg-white/5"} disabled:opacity-50 disabled:cursor-not-allowed`}>
                             {isStartingRecording ? <Loader2 size={18} className="animate-spin" /> : isRecording ? <MicOff size={18} /> : <Mic size={18} />}

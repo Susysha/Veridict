@@ -98,6 +98,11 @@ function DashboardContent() {
         if (searchParams.get("analysis") === "true") {
             const data = sessionStorage.getItem("latestInterviewAnalysis");
             if (data) {
+                // Ensure any lingering TTS audio from the interview is immediately killed
+                if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+                    window.speechSynthesis.cancel();
+                }
+
                 setInterviewAnalysis(JSON.parse(data));
                 setShowInterviewAnalysis(true);
             }
