@@ -7,7 +7,9 @@ import { confirmPasswordReset, verifyPasswordResetCode } from "firebase/auth";
 import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 
-export default function ResetPasswordPage() {
+import { Suspense } from "react";
+
+function ResetPasswordContent() {
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
@@ -216,5 +218,20 @@ export default function ResetPasswordPage() {
                 )}
             </div>
         </div>
+    );
+}
+
+export default function ResetPasswordPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-ink flex items-center justify-center p-4">
+                <div className="text-muted text-sm flex items-center gap-2">
+                    <span className="w-4 h-4 rounded-full border-2 border-gold border-t-transparent animate-spin"></span>
+                    Loading...
+                </div>
+            </div>
+        }>
+            <ResetPasswordContent />
+        </Suspense>
     );
 }
