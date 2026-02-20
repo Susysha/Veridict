@@ -111,9 +111,9 @@ function DashboardContent() {
                 setUser(currentUser);
                 // Load profile, pre-fill fields — show onboarding once per sign-in session
                 const profile = getProfile();
-                if (!sessionStorage.getItem("onboarding_shown")) {
-                    setShowOnboarding(true);
-                }
+
+                setShowOnboarding(true);
+
                 if (profile.targetRole) setRole(profile.targetRole);
                 if (profile.experienceLevel) setExperience(profile.experienceLevel);
                 recordTodayVisit();
@@ -247,7 +247,6 @@ function DashboardContent() {
                 <OnboardingWizard
                     firebaseUser={user}
                     onComplete={(profile) => {
-                        sessionStorage.setItem("onboarding_shown", "1");
                         setShowOnboarding(false);
                         if (profile.targetRole) setRole(profile.targetRole);
                         if (profile.experienceLevel) setExperience(profile.experienceLevel);
