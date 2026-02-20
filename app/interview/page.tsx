@@ -235,6 +235,9 @@ function InterviewContent() {
     }, []);
 
     const recognitionRef = useRef<any>(null);
+    // Ref mirrors isRecording so onend always reads the *live* value,
+    // avoiding the stale-closure bug that caused no-speech to toggle the button off.
+    const isRecordingRef = useRef(false);
 
     const startListening = () => {
         if (typeof window === 'undefined') return;
@@ -249,6 +252,7 @@ function InterviewContent() {
         recognition.lang = 'en-US';
 
         recognition.onstart = () => {
+            isRecordingRef.current = true;
             setIsRecording(true);
             setIsStartingRecording(false);
         };
@@ -266,20 +270,25 @@ function InterviewContent() {
         };
 
         recognition.onerror = (event: any) => {
+            // Ignore transient errors — no-speech just means silence, not a real failure.
+            // audio-capture can flicker on some browsers. Both should NOT stop recording.
+            if (event.error === 'no-speech' || event.error === 'audio-capture') return;
             console.error("Speech Recognition Error:", event.error);
             if (event.error === 'not-allowed') {
+                isRecordingRef.current = false;
                 setIsRecording(false);
                 alert("Microphone access blocked.");
             }
         };
 
         recognition.onend = () => {
-            // Auto-restart if we are still "recording" state (unless stopped manually)
-            if (isRecording) {
+            // Use ref (not state) to read the live value — avoids stale closure.
+            if (isRecordingRef.current) {
                 try {
-                    recognition.start();
+                    recognition.start(); // stay alive
                 } catch (e) {
-                    // Ignore already started errors
+                    // Already started or aborted — give up cleanly
+                    isRecordingRef.current = false;
                     setIsRecording(false);
                 }
             } else {
@@ -291,17 +300,19 @@ function InterviewContent() {
             recognition.start();
         } catch (e) {
             console.error("Failed to start recognition:", e);
+            isRecordingRef.current = false;
             setIsRecording(false);
         }
     };
 
     const stopListening = () => {
-        setIsRecording(false); // Flag first to prevent auto-restart
+        isRecordingRef.current = false; // Clear ref FIRST to prevent auto-restart in onend
+        setIsRecording(false);
+        setIsStartingRecording(false);
         if (recognitionRef.current) {
             recognitionRef.current.stop();
             recognitionRef.current = null;
         }
-        setIsStartingRecording(false);
     };
 
     const fetchAudioBlob = async (text: string) => {
