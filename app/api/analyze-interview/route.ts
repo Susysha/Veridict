@@ -48,31 +48,69 @@ export async function POST(req: NextRequest) {
         }
         `;
 
-        const MODEL = 'gemma-3-27b-it'; // User requested Gemma, matching generation style
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${apiKey}`;
+        const groqApiKey = process.env.GROQ_API_KEY;
 
-        console.log(`Sending analysis request to ${MODEL}...`);
+        let text = "";
 
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contents: [{ parts: [{ text: prompt }] }]
-            })
-        });
+        try {
+            if (!groqApiKey) {
+                console.warn("Missing GROQ_API_KEY, falling back to Gemini");
+                throw new Error("Missing GROQ_API_KEY");
+            }
 
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error(`Gemini API Error: ${response.status}`, errorText);
-            throw new Error(`Gemini API Error: ${response.status} ${errorText}`);
-        }
+            console.log("Sending analysis request to Groq (llama-3.3-70b-versatile)...");
+            const groqResponse = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${groqApiKey}`
+                },
+                body: JSON.stringify({
+                    model: "llama-3.3-70b-versatile",
+                    messages: [{ role: "user", content: prompt }]
+                })
+            });
 
-        const data = await response.json();
-        let text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (!groqResponse.ok) {
+                const errorText = await groqResponse.text();
+                throw new Error(`Groq API Error: ${groqResponse.status} ${errorText}`);
+            }
 
-        if (!text) {
-            console.error("Gemini Empty Response:", JSON.stringify(data, null, 2));
-            throw new Error("No output from AI");
+            const groqData = await groqResponse.json();
+            text = groqData.choices?.[0]?.message?.content;
+
+            if (!text) {
+                throw new Error("No text content in Groq API response");
+            }
+        } catch (groqError: any) {
+            console.warn("Groq API failed, falling back to Gemini:", groqError.message);
+
+            const MODEL = 'gemma-3-27b-it'; // User requested Gemma, matching generation style
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${apiKey}`;
+
+            console.log(`Sending analysis request to ${MODEL}...`);
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: prompt }] }]
+                })
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error(`Gemini API Error: ${response.status}`, errorText);
+                throw new Error(`Gemini API Error: ${response.status} ${errorText}`);
+            }
+
+            const data = await response.json();
+            text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+            if (!text) {
+                console.error("Gemini Empty Response:", JSON.stringify(data, null, 2));
+                throw new Error("No output from AI");
+            }
         }
 
         // Clean JSON

@@ -636,7 +636,7 @@ function DashboardContent() {
                                         </div>
                                         <div className="text-right flex flex-col items-end gap-0.5">
                                             <span className="text-[13px] font-medium text-cream">{session.score}/100</span>
-                                            <span className={`text-[10px] px-1.5 py-0.5 rounded-[4px] ${session.status === "Passed" ? "bg-emerald-500/10 text-emerald-500" : "bg-gold/10 text-gold"}`}>
+                                            <span className={`text-[10px] px-1.5 py-0.5 rounded-[4px] whitespace-nowrap ${session.status === "Passed" ? "bg-emerald-500/10 text-emerald-500" : "bg-gold/10 text-gold"}`}>
                                                 {session.status}
                                             </span>
                                         </div>
@@ -754,15 +754,15 @@ function DashboardContent() {
                                         <h2 className="text-xl font-serif font-medium text-cream mb-1">{resumeData.name || "Candidate Report"}</h2>
                                         <div className="flex items-center gap-3">
                                             <span className="text-sm text-gold uppercase tracking-wider font-medium">{resumeData.role}</span>
-                                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-surface border border-border text-muted uppercase tracking-wide">
-                                                {resumeData.experienceLevel} Level
+                                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-surface border border-border text-muted uppercase tracking-wide whitespace-nowrap">
+                                                {String(resumeData.experienceLevel).toLowerCase()} Level
                                             </span>
                                         </div>
                                     </div>
                                 </div>
                                 <button
                                     onClick={() => setShowAnalysis(false)}
-                                    className="text-muted hover:text-white transition-colors p-2 hover:bg-white/5 rounded-lg"
+                                    className="text-muted hover:text-white transition-colors p-2 hover:bg-white/5 rounded-lg shrink-0"
                                 >
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12" /></svg>
                                 </button>

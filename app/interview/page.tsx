@@ -235,82 +235,108 @@ function InterviewContent() {
     }, []);
 
     const recognitionRef = useRef<any>(null);
-    // Ref mirrors isRecording so onend always reads the *live* value,
-    // avoiding the stale-closure bug that caused no-speech to toggle the button off.
     const isRecordingRef = useRef(false);
+    const isStartingRef = useRef(false); // New lock to prevent double-starts
 
     const startListening = () => {
         if (typeof window === 'undefined') return;
+
+        // Prevent starting if already recording or in the process of starting
+        if (isRecordingRef.current || isStartingRef.current) return;
+
         const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-        if (!SpeechRecognition) return;
-
-        const recognition = new SpeechRecognition();
-        recognitionRef.current = recognition;
-
-        recognition.continuous = true;
-        recognition.interimResults = true;
-        recognition.lang = 'en-US';
-
-        recognition.onstart = () => {
-            isRecordingRef.current = true;
-            setIsRecording(true);
+        if (!SpeechRecognition) {
+            alert("Speech recognition not supported in this browser.");
             setIsStartingRecording(false);
-        };
+            return;
+        }
 
-        recognition.onresult = (event: any) => {
-            let finalTranscript = '';
-            for (let i = event.resultIndex; i < event.results.length; ++i) {
-                if (event.results[i].isFinal) {
-                    finalTranscript += event.results[i][0].transcript;
-                }
-            }
-            if (finalTranscript) {
-                setTranscript(prev => prev + " " + finalTranscript);
-            }
-        };
-
-        recognition.onerror = (event: any) => {
-            // Ignore transient errors — no-speech just means silence, not a real failure.
-            // audio-capture can flicker on some browsers. Both should NOT stop recording.
-            if (event.error === 'no-speech' || event.error === 'audio-capture') return;
-            console.error("Speech Recognition Error:", event.error);
-            if (event.error === 'not-allowed') {
-                isRecordingRef.current = false;
-                setIsRecording(false);
-                alert("Microphone access blocked.");
-            }
-        };
-
-        recognition.onend = () => {
-            // Use ref (not state) to read the live value — avoids stale closure.
-            if (isRecordingRef.current) {
-                try {
-                    recognition.start(); // stay alive
-                } catch (e) {
-                    // Already started or aborted — give up cleanly
-                    isRecordingRef.current = false;
-                    setIsRecording(false);
-                }
-            } else {
-                setIsRecording(false);
-            }
-        };
+        isStartingRef.current = true;
+        setIsStartingRecording(true);
 
         try {
+            // Clean up existing instance if it somehow exists
+            if (recognitionRef.current) {
+                try {
+                    recognitionRef.current.abort();
+                } catch (e) { }
+                recognitionRef.current = null;
+            }
+
+            const recognition = new SpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = 'en-US';
+
+            recognition.onstart = () => {
+                isRecordingRef.current = true;
+                isStartingRef.current = false;
+                setIsRecording(true);
+                setIsStartingRecording(false);
+            };
+
+            recognition.onresult = (event: any) => {
+                let finalTranscript = '';
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    if (event.results[i].isFinal) {
+                        finalTranscript += event.results[i][0].transcript;
+                    }
+                }
+                if (finalTranscript) {
+                    setTranscript(prev => prev + " " + finalTranscript);
+                }
+            };
+
+            recognition.onerror = (event: any) => {
+                console.error("Speech Recognition Error:", event.error);
+                if (event.error === 'not-allowed') {
+                    isRecordingRef.current = false;
+                    isStartingRef.current = false;
+                    setIsRecording(false);
+                    setIsStartingRecording(false);
+                    alert("Microphone access blocked.");
+                } else if (event.error === 'aborted') {
+                    // Aborted happens if stop/abort is called, just reset state silently
+                    isRecordingRef.current = false;
+                    isStartingRef.current = false;
+                    setIsRecording(false);
+                    setIsStartingRecording(false);
+                }
+                // We don't stop strictly on 'no-speech' or 'audio-capture' 
+            };
+
+            recognition.onend = () => {
+                isRecordingRef.current = false;
+                isStartingRef.current = false;
+                setIsRecording(false);
+                setIsStartingRecording(false);
+            };
+
+            recognitionRef.current = recognition;
             recognition.start();
+
         } catch (e) {
             console.error("Failed to start recognition:", e);
             isRecordingRef.current = false;
+            isStartingRef.current = false;
             setIsRecording(false);
+            setIsStartingRecording(false);
         }
     };
 
     const stopListening = () => {
-        isRecordingRef.current = false; // Clear ref FIRST to prevent auto-restart in onend
+        if (!isRecordingRef.current && !isStartingRef.current) return;
+
+        isRecordingRef.current = false;
+        isStartingRef.current = false;
         setIsRecording(false);
         setIsStartingRecording(false);
+
         if (recognitionRef.current) {
-            recognitionRef.current.stop();
+            try {
+                // Use abort() instead of stop() for immediate termination without firing extra events
+                recognitionRef.current.abort();
+            } catch (e) { }
             recognitionRef.current = null;
         }
     };
@@ -366,6 +392,19 @@ function InterviewContent() {
 
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const lastSpokenIndex = useRef<number>(-1);
+
+    // Global cleanup to ensure TTS never leaks into other pages
+    useEffect(() => {
+        return () => {
+            if (audioRef.current) {
+                audioRef.current.pause();
+                audioRef.current.currentTime = 0;
+            }
+            if (typeof window !== 'undefined') {
+                window.speechSynthesis.cancel();
+            }
+        };
+    }, []);
 
     const speakQuestion = async (text: string, index: number) => {
         // Prevent speaking if we are finishing the interview
@@ -445,6 +484,16 @@ function InterviewContent() {
             // Finish Interview
             setIsGeneratingReport(true);
             setIsAnalyzing(false); // Stop analysis loop immediately
+
+            // --- STOP ALL TTS AUDIO IMMEDIATELY ---
+            if (audioRef.current) {
+                audioRef.current.pause();
+                audioRef.current.currentTime = 0;
+                audioRef.current = null;
+            }
+            if (typeof window !== 'undefined') {
+                window.speechSynthesis.cancel();
+            }
 
             // Stop camera tracks to prevent WebGL errors
             if (streamRef.current) {
