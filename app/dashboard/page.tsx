@@ -6,12 +6,14 @@ import {
     Upload, FileText, Briefcase, Building, Clock,
     TrendingUp, ArrowRight, Plus, Check,
     Code, Users, Monitor, Brain,
-    Zap, Award, BarChart3, Mic, BookOpen, LogOut
+    Zap, Award, BarChart3, Mic, BookOpen, LogOut, Flame
 } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { auth } from "@/lib/firebase";
 import { User, signOut } from "firebase/auth";
+import { getProfile, recordTodayVisit, getStreak, getWeekDots } from "@/lib/userProfile";
+import OnboardingWizard from "@/components/OnboardingWizard";
 
 import { Suspense } from "react";
 
@@ -33,6 +35,12 @@ function DashboardContent() {
     const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
     const [difficulty, setDifficulty] = useState("Medium");
     const [questionCount, setQuestionCount] = useState(5);
+    // Onboarding + Streak
+    const [showOnboarding, setShowOnboarding] = useState(false);
+    const [streak, setStreak] = useState(0);
+    const [weekDots, setWeekDots] = useState<boolean[]>([]);
+    // Avatar fallback
+    const [avatarError, setAvatarError] = useState(false);
 
     const companies = [
         "Google", "Meta", "Amazon", "Netflix", "Uber",
@@ -101,6 +109,16 @@ function DashboardContent() {
                 router.push("/");
             } else {
                 setUser(currentUser);
+                // Load profile, pre-fill fields — show onboarding once per sign-in session
+                const profile = getProfile();
+                if (!sessionStorage.getItem("onboarding_shown")) {
+                    setShowOnboarding(true);
+                }
+                if (profile.targetRole) setRole(profile.targetRole);
+                if (profile.experienceLevel) setExperience(profile.experienceLevel);
+                recordTodayVisit();
+                setStreak(getStreak());
+                setWeekDots(getWeekDots());
             }
             setLoading(false);
         });
@@ -223,6 +241,22 @@ function DashboardContent() {
 
     return (
         <div className="min-h-screen bg-ink text-text font-sans selection:bg-gold/20 relative">
+
+            {/* ─── Onboarding Wizard (first-time users only) ─── */}
+            {showOnboarding && (
+                <OnboardingWizard
+                    firebaseUser={user}
+                    onComplete={(profile) => {
+                        sessionStorage.setItem("onboarding_shown", "1");
+                        setShowOnboarding(false);
+                        if (profile.targetRole) setRole(profile.targetRole);
+                        if (profile.experienceLevel) setExperience(profile.experienceLevel);
+                        setStreak(1);
+                        setWeekDots(getWeekDots());
+                    }}
+                />
+            )}
+
             {/* ─── Technical Grid Background ─── */}
             <div
                 className="absolute inset-0 pointer-events-none opacity-[0.03]"
@@ -238,11 +272,7 @@ function DashboardContent() {
                 {/* ─── Embedded Header ─── */}
                 <div className="flex items-center justify-between mb-8 animate-fade-up">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gold rounded-lg flex items-center justify-center shadow-sm">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1a1200" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M3 5l9 14 9-14" />
-                            </svg>
-                        </div>
+                        <img src="/logo.png" alt="Veridict Logo" className="w-10 h-10 rounded-lg object-cover shadow-sm" />
                         <div>
                             <h1 className="font-serif text-2xl font-semibold text-cream tracking-tight">Veridict</h1>
                             <p className="text-[11px] text-muted uppercase tracking-wider font-medium">Interview Intelligence Console</p>
@@ -256,16 +286,25 @@ function DashboardContent() {
                         </div>
                         <div className="flex items-center gap-3 pl-4 border-l border-border">
                             <div className="text-right hidden sm:block">
-                                <div className="text-sm font-medium text-cream">{user?.displayName || "User"}</div>
+                                <div className="text-sm font-medium text-cream">{getProfile().name || user?.displayName || "User"}</div>
                                 <div className="text-[10px] text-muted uppercase tracking-wider">Candidate</div>
                             </div>
-                            {user?.photoURL ? (
-                                <img src={user.photoURL} alt="User" className="w-10 h-10 rounded-lg border border-border object-cover" />
-                            ) : (
-                                <div className="w-10 h-10 rounded-lg bg-surface border border-border flex items-center justify-center text-sm font-medium text-gold">
-                                    {user?.displayName ? user.displayName[0] : "U"}
-                                </div>
-                            )}
+                            {/* Clickable avatar → /profile */}
+                            <button onClick={() => router.push("/profile")} title="Edit Profile" className="shrink-0 relative w-10 h-10">
+                                {user?.photoURL && !avatarError ? (
+                                    <img
+                                        src={user.photoURL}
+                                        alt="User"
+                                        referrerPolicy="no-referrer"
+                                        onError={() => setAvatarError(true)}
+                                        className="w-10 h-10 rounded-lg border border-border object-cover hover:border-gold/50 transition-all"
+                                    />
+                                ) : (
+                                    <div className="w-10 h-10 rounded-lg bg-surface border border-border flex items-center justify-center text-sm font-semibold text-gold hover:border-gold/50 hover:bg-gold/5 transition-all uppercase">
+                                        {(getProfile().name || user?.displayName || "U")[0]}
+                                    </div>
+                                )}
+                            </button>
                             <button
                                 onClick={handleLogout}
                                 title="Sign Out"
@@ -621,13 +660,29 @@ function DashboardContent() {
                             </div>
                         </section>
 
-                        {/* Weekly Goal - Symmetrical Module */}
+                        {/* Weekly Goal + Live Streak */}
                         <section className="bg-surface border border-border rounded-lg p-5">
                             <div className="flex items-center justify-between mb-4">
                                 <h3 className="font-serif font-medium text-cream text-sm">Weekly Goal</h3>
-                                <div className="text-[10px] font-medium text-gold bg-gold/10 px-2 py-0.5 rounded border border-gold/20">
-                                    2 Days Left
+                                <div className={`flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-lg border ${streak >= 3
+                                    ? "text-orange-400 bg-orange-400/10 border-orange-400/20"
+                                    : streak >= 1
+                                        ? "text-gold bg-gold/10 border-gold/20"
+                                        : "text-muted bg-panel border-border"
+                                    }`}>
+                                    <Flame size={12} className={streak >= 1 ? "fill-current" : ""} />
+                                    {streak > 0 ? `${streak}-day streak` : "Start streak"}
                                 </div>
+                            </div>
+                            {/* 7-day dot grid Mon–Sun */}
+                            <div className="flex items-center gap-1.5 mb-4">
+                                {["M", "T", "W", "T", "F", "S", "S"].map((d, i) => (
+                                    <div key={i} className="flex flex-col items-center gap-1 flex-1">
+                                        <div className={`w-full h-1.5 rounded-full transition-all ${weekDots[i] ? "bg-gold shadow-[0_0_6px_rgba(201,168,76,0.5)]" : "bg-panel"
+                                            }`} />
+                                        <span className="text-[9px] text-muted">{d}</span>
+                                    </div>
+                                ))}
                             </div>
                             {/* Goals List (State-based) */}
                             <div className="space-y-4">

@@ -16,18 +16,27 @@ export default function LoginPage() {
   const [lastName, setLastName] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // True until Firebase resolves auth — prevents login UI flash for already-logged-in users
+  const [authChecking, setAuthChecking] = useState(true);
 
   const router = useRouter();
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (user) {
-        // If user is already logged in, go to dashboard
-        router.push("/dashboard");
+        router.replace("/dashboard");
+        // Keep authChecking true so the login UI is never shown
+      } else {
+        setAuthChecking(false);
       }
     });
     return () => unsubscribe();
   }, [router]);
+
+  // Render nothing until we know the auth state
+  if (authChecking) {
+    return <div className="min-h-screen bg-ink" />;
+  }
 
   // Helper to map Firebase errors to friendly messages
   const getFriendlyErrorMessage = (errorCode: string) => {
@@ -110,11 +119,7 @@ export default function LoginPage() {
         ></div>
 
         <Link className="logo relative flex items-center gap-2.5 font-serif text-xl font-semibold text-cream tracking-tighter no-underline" href="#">
-          <div className="logo-mark w-[34px] h-[34px] bg-gradient-to-br from-gold to-gold-light rounded-[9px] flex items-center justify-center flex-shrink-0">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1a1200" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 5l9 14 9-14" />
-            </svg>
-          </div>
+          <img src="/logo.png" alt="Veridict Logo" className="logo-mark w-[34px] h-[34px] rounded-[9px] object-cover flex-shrink-0" />
           Veridict
         </Link>
 
