@@ -6,7 +6,7 @@ import {
     Upload, FileText, Briefcase, Building, Clock,
     TrendingUp, ArrowRight, Plus, Check,
     Code, Users, Monitor, Brain,
-    Zap, Award, BarChart3, Mic, BookOpen, LogOut, Flame
+    Zap, Award, BarChart3, Mic, BookOpen, LogOut, Flame, ShieldCheck
 } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -283,6 +283,13 @@ function DashboardContent() {
                     </div>
 
                     <div className="flex items-center gap-4">
+                        <Link
+                            href="/statistics"
+                            className="hidden sm:flex items-center gap-2 text-xs font-bold text-ink bg-gold hover:bg-gold-light px-4 py-1.5 rounded-lg transition-all shadow-[0_0_15px_rgba(201,168,76,0.3)] hover:-translate-y-0.5"
+                        >
+                            <ShieldCheck size={14} />
+                            ARCHITECTURE & PRIVACY
+                        </Link>
                         <div className="flex items-center gap-2 text-xs font-medium text-gold bg-gold/10 px-3 py-1.5 rounded-lg border border-gold/20">
                             <Zap size={14} className="fill-gold" />
                             <span>Pro Plan</span>
