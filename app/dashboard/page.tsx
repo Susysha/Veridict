@@ -94,15 +94,26 @@ function DashboardContent() {
     const [interviewAnalysis, setInterviewAnalysis] = useState<any>(null);
     const [showInterviewAnalysis, setShowInterviewAnalysis] = useState(false);
 
+    // Global Audio Kill Switch on Dashboard Mount
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+            if ((window as any).__activeAudio) {
+                try {
+                    (window as any).__activeAudio.pause();
+                    (window as any).__activeAudio.currentTime = 0;
+                    (window as any).__activeAudio = null;
+                } catch (e) { }
+            }
+        }
+    }, []);
+
     useEffect(() => {
         if (searchParams.get("analysis") === "true") {
             const data = sessionStorage.getItem("latestInterviewAnalysis");
             if (data) {
-                // Ensure any lingering TTS audio from the interview is immediately killed
-                if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-                    window.speechSynthesis.cancel();
-                }
-
                 setInterviewAnalysis(JSON.parse(data));
                 setShowInterviewAnalysis(true);
             }

@@ -29,6 +29,8 @@ function InterviewContent() {
     // State
     const [questions, setQuestions] = useState<Question[]>([]);
     const [currentIndex, setCurrentIndex] = useState(0);
+    const currentIndexRef = useRef(0);
+    const isMounted = useRef(true);
     const [loading, setLoading] = useState(true);
     const [permissionError, setPermissionError] = useState(false);
     const [isStreamActive, setIsStreamActive] = useState(false); // Track if stream is actually playing
@@ -155,18 +157,13 @@ function InterviewContent() {
             if (results.faceLandmarks && results.faceLandmarks.length > 0) {
                 const landmarks = results.faceLandmarks[0];
 
-                // --- Simple Posture Analysis ---
-                // Check if nose (landmark 1) is too far left/right or up/down
+                // --- Stricter Posture Analysis ---
+                // Nose must be TIGHTLY centered (0.42 to 0.58) and upright (0.35 to 0.65)
                 const nose = landmarks[1];
-                const leftShoulder = landmarks[11]; // Approximation if available (FaceLandmarker mostly does face, distinct from PoseLandmarker)
-                // Actually FaceLandmarker is just face. We can check head rotation and position.
+                const isCentered = nose.x > 0.42 && nose.x < 0.58;
+                const isUpright = nose.y > 0.35 && nose.y < 0.65;
 
-                // Center Check (X: 0.5 is center)
-                const isCentered = nose.x > 0.35 && nose.x < 0.65;
-                const isUpright = nose.y > 0.2 && nose.y < 0.8;
-
-                // --- Eye Contact Analysis (Blendshapes) ---
-                // Using blendshapes is more robust for gaze if available, otherwise geometry
+                // --- Lenient Eye Contact Analysis (Blendshapes) ---
                 const blendshapes = results.faceBlendshapes?.[0]?.categories;
                 let eyeContact = true;
 
@@ -176,24 +173,25 @@ function InterviewContent() {
                     const lookUp = blendshapes.find(b => b.categoryName === 'eyeLookUp')?.score || 0;
                     const lookDown = blendshapes.find(b => b.categoryName === 'eyeLookDown')?.score || 0;
 
-                    // Stricter Thresholds (0.4 means even slight deviation triggers warning)
-                    if (lookLeft > 0.45 || lookRight > 0.45 || lookUp > 0.35 || lookDown > 0.4) {
+                    // Lenient Thresholds (0.45+ allows natural eye scanning)
+                    if (lookLeft > 0.45 || lookRight > 0.45 || lookUp > 0.40 || lookDown > 0.45) {
                         eyeContact = false;
                     }
                 }
 
-                // --- Scoring & Feedback ---
+                // --- Balanced Scoring & Feedback ---
                 if (!isCentered || !isUpright) {
                     setRealtimeFeedback({ message: "Center yourself in frame", type: "bad" });
-                    setPostureScore(prev => Math.max(prev - 0.5, 0));
+                    setPostureScore(prev => Math.max(prev - 1.5, 0)); // Very fast drop for posture
                 } else if (!eyeContact) {
                     setRealtimeFeedback({ message: "Maintain eye contact", type: "bad" });
-                    setEyeContactScore(prev => Math.max(prev - 0.8, 0)); // Higher penalty
-                } else {
-                    // Recovery
-                    setRealtimeFeedback(null);
+                    setEyeContactScore(prev => Math.max(prev - 0.8, 0)); // Fair drop for eye contact
                     setPostureScore(prev => Math.min(prev + 0.1, 100));
-                    setEyeContactScore(prev => Math.min(prev + 0.2, 100)); // Faster recovery
+                } else {
+                    // Normal Recovery
+                    setRealtimeFeedback(null);
+                    setPostureScore(prev => Math.min(prev + 0.2, 100));
+                    setEyeContactScore(prev => Math.min(prev + 0.4, 100));
                 }
 
             } else {
@@ -409,23 +407,38 @@ function InterviewContent() {
 
     const stopAllAudio = () => {
         if (audioRef.current) {
-            audioRef.current.pause();
-            audioRef.current.currentTime = 0;
+            try {
+                audioRef.current.pause();
+                audioRef.current.currentTime = 0;
+            } catch (e) { }
             audioRef.current = null;
         }
         if (typeof window !== 'undefined') {
-            window.speechSynthesis.cancel();
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+            if ((window as any).__activeAudio) {
+                try {
+                    (window as any).__activeAudio.pause();
+                    (window as any).__activeAudio.currentTime = 0;
+                    (window as any).__activeAudio = null;
+                } catch (e) { }
+            }
         }
     };
 
     // Global cleanup to ensure TTS never leaks into other pages
     useEffect(() => {
-        return stopAllAudio;
+        isMounted.current = true;
+        return () => {
+            isMounted.current = false;
+            stopAllAudio();
+        };
     }, []);
 
     const speakQuestion = async (text: string, index: number) => {
-        // Prevent speaking if we are finishing the interview
-        if (isGeneratingReport) return;
+        // Prevent speaking if we are finishing the interview or if we've already moved past this question
+        if (isGeneratingReport || currentIndexRef.current !== index) return;
 
         try {
             // 1. STOP previous audio immediately
@@ -440,19 +453,37 @@ function InterviewContent() {
                 }
             }
 
-            // 2. Race Condition Check
-            if (currentIndex !== index || isGeneratingReport) return;
+            // 2. Strict Race Condition Check against Ref
+            if (currentIndexRef.current !== index || isGeneratingReport) return;
 
             if (url) {
                 // Use Server TTS
                 const audio = new Audio(url);
                 audioRef.current = audio;
+
+                // Expose to window for global route cleanup
+                (window as any).__activeAudio = audio;
+
+                // Final safety check before play (including if component unmounted)
+                if (currentIndexRef.current !== index || !isMounted.current) {
+                    audio.pause();
+                    return;
+                }
+
                 await audio.play().catch(e => console.error("Audio Play Error:", e));
+
+                // If the user clicked Next literally the split second it started playing
+                if (currentIndexRef.current !== index || !isMounted.current) {
+                    stopAllAudio();
+                }
+
                 audio.onended = () => {
                     if (audioRef.current === audio) audioRef.current = null;
+                    if ((window as any).__activeAudio === audio) (window as any).__activeAudio = null;
                 };
             } else {
                 // Fallback to Browser TTS
+                if (currentIndexRef.current !== index || !isMounted.current) return;
                 const utterance = new SpeechSynthesisUtterance(text);
                 utterance.rate = 1.0;
                 utterance.pitch = 1.0;
@@ -463,6 +494,8 @@ function InterviewContent() {
     };
 
     useEffect(() => {
+        currentIndexRef.current = currentIndex;
+
         if (questions.length > 0 && !loading && questions[currentIndex]) {
             if (questionContainerRef.current) questionContainerRef.current.scrollTop = 0;
             if (lastSpokenIndex.current !== currentIndex) {
@@ -479,6 +512,11 @@ function InterviewContent() {
     const [isGeneratingReport, setIsGeneratingReport] = useState(false);
 
     const handleNext = async () => {
+        // Stop listening immediately to prevent cross-contamination of transcripts
+        if (recognitionRef.current) {
+            try { recognitionRef.current.abort(); } catch (e) { }
+        }
+
         const currentAnswer = {
             questionId: questions[currentIndex].id,
             question: questions[currentIndex].question,
@@ -491,10 +529,25 @@ function InterviewContent() {
 
         stopAllAudio();
 
+        // Ensure browser TTS is absolutely wiped
+        if (typeof window !== 'undefined') {
+            window.speechSynthesis.pause();
+            window.speechSynthesis.cancel();
+        }
+
         if (currentIndex < questions.length - 1) {
             setCurrentIndex(prev => prev + 1);
             setTranscript("");
             setCode("");
+
+            // Restart listening if we were recording before
+            if (isRecordingRef.current && !isStartingRef.current) {
+                setTimeout(() => {
+                    if (recognitionRef.current) {
+                        try { recognitionRef.current.start(); } catch (e) { }
+                    }
+                }, 200);
+            }
         } else {
             // Finish Interview
             setIsGeneratingReport(true);
